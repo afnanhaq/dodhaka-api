@@ -2,6 +2,7 @@ const express = require('express');
 var randomstring = require("randomstring");
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const schedule = require('node-schedule');
 const knex = require('knex')({
   client: 'pg',
   connection: {
@@ -74,7 +75,7 @@ app.post('/postevent', (req, res) => {
 	})
 	.catch(err => res.status(400).json("unable to post event"));
 });
-// checking if they can update app
+// checking if they can update event
 app.post('/updatesignin', (req, res) => {
 	const { reference_id, email } = req.body;
 	knex.select('*').from('events')
@@ -87,7 +88,7 @@ app.post('/updatesignin', (req, res) => {
 		})
 		.catch(err => res.status(400).json("incorrect ID or email"))
 })
-
+//updating event
 app.put('/updateevent', (req, res) => {
 	const { id, eventName, startDate, endDate, startTime, endTime, address, description } = req.body;
 	knex('events')
@@ -105,7 +106,7 @@ app.put('/updateevent', (req, res) => {
 		.then(id => res.json(id[0]))
 		.catch(err =>  res.status(400).json("unable to update event"))
 })
-
+// deleting event
 app.delete('/deleteevent/:id', (req, res) => {
 	const { id } = req.params;
 	knex('events')
@@ -114,5 +115,18 @@ app.delete('/deleteevent/:id', (req, res) => {
 	  .then(number => res.json(number))
 	  .catch(err => res.status(400).json("unable to delete event"))
 })
+// deleting events when their startDate or EndDate finishes
+const rule = new schedule.RecurrenceRule();
+rule.hour = [6, 18];
+rule.minute = 0;
+
+var deleteSchedule = schedule.scheduleJob(rule, function(){
+	const date = new Date()
+  	knex('events')
+		.where('enddate', '<', date)
+		.orWhere('startdate', '<', date)
+		.del()
+		.then(response =>  response)
+});
 
 app.listen(3003);
