@@ -22,7 +22,7 @@ app.use(cors());
 app.get('/', (req, res) => {
 	res.send("back-end is working");
 });
-// getting 9 latest events from main page
+// getting 9 latest events from main page hhahahaha
 app.get('/home', (req, res) => {
 	knex.select('*').from('events')
 	.then(events => {
