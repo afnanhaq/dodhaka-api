@@ -2,14 +2,13 @@ const express = require('express');
 var randomstring = require("randomstring");
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const moment = require('moment');
 const schedule = require('node-schedule');
 const knex = require('knex')({
   client: 'pg',
   connection: {
-    host : '127.0.0.1',
-    user : 'postgres',
-    password : 'liverpool',
-    database : 'dodhaka'
+    connectionString: process.env.DATABASE_URL,
+    ssl: true
   }
 });
 
@@ -22,7 +21,7 @@ app.use(cors());
 app.get('/', (req, res) => {
 	res.send("back-end is working");
 });
-// getting 9 latest events from main page hhahahaha
+// getting 9 latest events from main page
 app.get('/home', (req, res) => {
 	knex.select('*').from('events')
 	.then(events => {
@@ -116,17 +115,17 @@ app.delete('/deleteevent/:id', (req, res) => {
 	  .catch(err => res.status(400).json("unable to delete event"))
 })
 // deleting events when their startDate or EndDate finishes
-const rule = new schedule.RecurrenceRule();
+/* const rule = new schedule.RecurrenceRule();
 rule.hour = [6, 18];
 rule.minute = 0;
 
-var deleteSchedule = schedule.scheduleJob(rule, function(){
+ var deleteSchedule = schedule.scheduleJob(rule, function(){
 	const date = new Date()
   	knex('events')
 		.where('enddate', '<', date)
 		.orWhere('startdate', '<', date)
 		.del()
 		.then(response =>  response)
-});
+}); */
 
-app.listen(3003);
+app.listen(process.env.PORT || 3003);
